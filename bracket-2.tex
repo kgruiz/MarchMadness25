@@ -1,0 +1,190 @@
+\documentclass[tikz,border=1cm]{standalone}
+\usetikzlibrary{calc}
+
+% ------------------------------------------------
+% MACROS FOR EASY GLOBAL SPACING ADJUSTMENTS
+% ------------------------------------------------
+
+% How far right the right-side brackets start
+\def\regionSpacingX{18}
+
+% How far down/up the bottom brackets shift
+\def\regionSpacingY{14}
+
+% Base horizontal distance between bracket rounds
+\def\baseRoundDist{4}
+
+% Base vertical spacing between matches in a round
+\def\baseMatchDist{1.5}
+
+% Extra offset to shift the very first round horizontally/vertically
+\def\firstRoundOffsetX{0}
+\def\firstRoundOffsetY{0}
+
+% Multiplicative factor for horizontal spacing each round
+% (If 1.0, all rounds have the same horizontal spacing;
+%  if >1, each subsequent round gets spaced more widely, etc.)
+\def\roundSpacingFactor{1.0}
+
+% Multiplicative factor for vertical spacing each round
+% (If 1.0, all rounds have the same vertical spacing;
+%  if <1, each subsequent round’s matches are closer, etc.)
+\def\matchSpacingFactor{1.0}
+
+% ------------------------------------------------
+% LEFT-TO-RIGHT BRACKET PIC
+% ------------------------------------------------
+\tikzset{%
+  pics/tournament-region-ltr/.style={%
+    code={%
+      \def\pv##1{\pgfkeysvalueof{/tikz/tournament/##1}}
+      \tikzset{tournament/.cd,#1}
+
+      % We'll keep track of "current horizontal dist" and "current vertical dist"
+      % so that each round can be scaled if desired.
+      \pgfmathsetmacro{\currRoundDist}{\baseRoundDist}
+      \pgfmathsetmacro{\currMatchDist}{\baseMatchDist}
+
+      % For each round from n down to 0
+      \foreach \round [remember=\round as \prevRound] in {\pv{n},...,0} {%
+
+        % Number of matches in this round
+        \pgfmathtruncatemacro{\numNodes}{pow(2,\round)}
+
+        % The X coordinate offset for this round
+        \pgfmathsetmacro{\xOffset}{-\round*\currRoundDist + \firstRoundOffsetX}
+
+        % If it’s the first round
+        \ifnum\round=\pv{n}
+          \foreach \y in {1,...,\numNodes} {%
+            % Y coordinate for this match
+            \pgfmathsetmacro{\yCoord}{(\y-\numNodes/2 - 0.5)*\currMatchDist + \firstRoundOffsetY}
+            \draw
+              (\xOffset, \yCoord)
+                -- ++(\currRoundDist, 0)
+                |- coordinate[pos=0.25] (r-\pv{region}-\round-\y)
+                (\xOffset, \yCoord - \currMatchDist);
+          }
+        \else
+          % Later rounds
+          \foreach \y [evaluate=\y as \z using {int(2*\y)}] in {1,...,\numNodes} {%
+            \draw
+              (r-\pv{region}-\prevRound-\z)
+                -- ++(\currRoundDist,0)
+                |- coordinate[pos=0.25] (r-\pv{region}-\round-\y)
+                (r-\pv{region}-\prevRound-\the\numexpr\z-1);
+          }
+        \fi
+
+        % After finishing this round, scale the distances if needed
+        \pgfmathsetmacro{\currRoundDist}{\currRoundDist * \roundSpacingFactor}
+        \pgfmathsetmacro{\currMatchDist}{\currMatchDist * \matchSpacingFactor}
+      }
+
+      % Final line out of the last node
+      \draw (r-\pv{region}-0-1) -- ++(\currRoundDist,0);
+    }
+  },
+  % Default bracket settings
+  tournament/.cd,
+  n/.initial=4,  % 16-team bracket
+  l/.initial=1.0,
+  d/.initial=1.0,
+  region/.initial={}
+}
+
+% ------------------------------------------------
+% RIGHT-TO-LEFT BRACKET PIC
+% ------------------------------------------------
+\tikzset{%
+  pics/tournament-region-rtl/.style={%
+    code={%
+      \def\pv##1{\pgfkeysvalueof{/tikz/tournament/##1}}
+      \tikzset{tournament/.cd,#1}
+
+      \pgfmathsetmacro{\currRoundDist}{\baseRoundDist}
+      \pgfmathsetmacro{\currMatchDist}{\baseMatchDist}
+
+      \foreach \round [remember=\round as \prevRound] in {\pv{n},...,0} {%
+
+        \pgfmathtruncatemacro{\numNodes}{pow(2,\round)}
+
+        % This time we start from +X and go left
+        \pgfmathsetmacro{\xOffset}{\round*\currRoundDist + \firstRoundOffsetX}
+
+        \ifnum\round=\pv{n}
+          \foreach \y in {1,...,\numNodes} {%
+            \pgfmathsetmacro{\yCoord}{(\y-\numNodes/2 - 0.5)*\currMatchDist + \firstRoundOffsetY}
+            \draw
+              (\xOffset, \yCoord)
+                -- ++(-\currRoundDist,0)
+                |- coordinate[pos=0.25] (r-\pv{region}-\round-\y)
+                (\xOffset, \yCoord - \currMatchDist);
+          }
+        \else
+          \foreach \y [evaluate=\y as \z using {int(2*\y)}] in {1,...,\numNodes} {%
+            \draw
+              (r-\pv{region}-\prevRound-\z)
+                -- ++(-\currRoundDist,0)
+                |- coordinate[pos=0.25] (r-\pv{region}-\round-\y)
+                (r-\pv{region}-\prevRound-\the\numexpr\z-1);
+          }
+        \fi
+
+        \pgfmathsetmacro{\currRoundDist}{\currRoundDist * \roundSpacingFactor}
+        \pgfmathsetmacro{\currMatchDist}{\currMatchDist * \matchSpacingFactor}
+      }
+
+      \draw (r-\pv{region}-0-1) -- ++(-\currRoundDist,0);
+    }
+  }
+}
+
+\begin{document}
+\begin{tikzpicture}[remember picture, every node/.style={font=\small}]
+
+    % ------------------------------------------------
+    %   TOP-LEFT REGION (A): LTR
+    % ------------------------------------------------
+    \begin{scope}[shift={(0,\regionSpacingY)}]
+        \pic {tournament-region-ltr={region=A}};
+    \end{scope}
+
+    % ------------------------------------------------
+    %   TOP-RIGHT REGION (B): RTL
+    % ------------------------------------------------
+    \begin{scope}[shift={(\regionSpacingX,\regionSpacingY)}]
+        \pic {tournament-region-rtl={region=B}};
+    \end{scope}
+
+    % ------------------------------------------------
+    %   BOTTOM-LEFT REGION (C): LTR
+    % ------------------------------------------------
+    \begin{scope}[shift={(0,-\regionSpacingY)}]
+        \pic {tournament-region-ltr={region=C}};
+    \end{scope}
+
+    % ------------------------------------------------
+    %   BOTTOM-RIGHT REGION (D): RTL
+    % ------------------------------------------------
+    \begin{scope}[shift={(\regionSpacingX,-\regionSpacingY)}]
+        \pic {tournament-region-rtl={region=D}};
+    \end{scope}
+
+    % ------------------------------------------------
+    %   FINAL FOUR CONNECTIONS
+    % ------------------------------------------------
+    % Each bracket's final node is "r-<region>-0-1"
+    \coordinate (Semi1) at ($(r-A-0-1)!0.5!(r-B-0-1)$);
+    \coordinate (Semi2) at ($(r-C-0-1)!0.5!(r-D-0-1)$);
+
+    \draw[thick] (r-A-0-1) -- (r-B-0-1);
+    \draw[thick] (r-C-0-1) -- (r-D-0-1);
+    \draw[thick] (Semi1) -- (Semi2);
+
+    % (Optional) Mark final region nodes in red
+    \foreach \r in {A,B,C,D}
+    \fill[red] (r-\r-0-1) circle (2pt);
+
+\end{tikzpicture}
+\end{document}
