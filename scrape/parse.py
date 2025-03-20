@@ -88,6 +88,53 @@ def GetUniqueFilename(url: str, extension: str) -> str:
     return candidate + extension
 
 
+async def SavePageAndScreenshot(
+    page, url: str, htmlDir, screenshotDir, name: str | None = None
+) -> None:
+    """
+    Saves the current page's HTML content and screenshot to the specified directories.
+
+    Parameters
+    ----------
+    page : Page
+        The browser page instance.
+    url : str
+        The URL of the current page, used to generate unique filenames.
+    htmlDir : Path
+        Directory where the HTML file will be saved.
+    screenshotDir : Path
+        Directory where the screenshot will be saved.
+    """
+    # Retrieve page content
+    content = await page.execute_script("document.documentElement.outerHTML")
+    if isinstance(content, str):
+        htmlContent = content
+    elif isinstance(content, dict):
+        htmlContent = content.get("result", "")
+        if isinstance(htmlContent, dict) and "value" in htmlContent:
+            htmlContent = htmlContent["value"]
+        if not isinstance(htmlContent, str):
+            htmlContent = str(htmlContent)
+    else:
+        htmlContent = str(content)
+
+    # Generate unique filenames
+    contentFilename = htmlDir / GetUniqueFilename(url, ".html")
+    if name:
+        screenshotFilename = screenshotDir / (name + ".png")
+    else:
+        screenshotFilename = screenshotDir / GetUniqueFilename(url, ".png")
+
+    # Save the HTML content
+    contentFilename.write_text(htmlContent, encoding="utf-8")
+
+    # Save the screenshot
+    try:
+        await page.get_screenshot(path=str(screenshotFilename))
+    except ConnectionClosedError:
+        pass
+
+
 async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
     """
     Navigates to a URL or a list of URLs, saves the page content and screenshot,
@@ -189,44 +236,32 @@ async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
                     await page.go_to(url)
                     await page.wait_element(pydoll.constants.By.CSS_SELECTOR, "body")
 
-                    # Save page content
-                    content = await page.execute_script(
-                        "document.documentElement.outerHTML"
-                    )
-                    if isinstance(content, str):
-                        htmlContent = content
-                    elif isinstance(content, dict):
-                        htmlContent = content.get("result", "")
-                        if isinstance(htmlContent, dict) and "value" in htmlContent:
-                            htmlContent = htmlContent["value"]
-                        if not isinstance(htmlContent, str):
-                            htmlContent = str(htmlContent)
-                    else:
-                        htmlContent = str(content)
+                    await SavePageAndScreenshot(page, url, htmlDir, screenshotDir)
 
-                    contentFilename = htmlDir / GetUniqueFilename(url, ".html")
-                    screenshotFilename = screenshotDir / GetUniqueFilename(url, ".png")
-
-                    Path(contentFilename).write_text(htmlContent, encoding="utf-8")
-
-                    try:
-                        await page.get_screenshot(path=str(screenshotFilename))
-                    except ConnectionClosedError:
-                        pass
-
-                    # Example: Click a button if it exists
-                    # (Comment out if not needed)
+                    # Example: Select the "Men's Basketball" option from a <select> element if it exists
                     try:
                         await page.wait_element(
                             pydoll.constants.By.CSS_SELECTOR,
-                            "button",
+                            "select",
                             timeout=3,
                             raise_exc=False,
                         )
                         await page.execute_script(
-                            "document.querySelector('button').click();"
+                            "var selectElem = document.querySelector('select'); "
+                            + "if(selectElem){ "
+                            + "  for(var i=0; i < selectElem.options.length; i++){ "
+                            + '    if(selectElem.options[i].text === "Men\'s Basketball"){ '
+                            + "      selectElem.selectedIndex = i; "
+                            + "      selectElem.dispatchEvent(new Event('change')); "
+                            + "      break; "
+                            + "    } "
+                            + "  } "
+                            + "}",
                         )
                         await asyncio.sleep(1)  # Delay to let the page update
+
+                        await SavePageAndScreenshot(page, url, htmlDir, screenshotDir)
+
                     except Exception:
                         pass
 

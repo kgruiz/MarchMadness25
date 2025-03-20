@@ -12,7 +12,7 @@
         {
           "teams": [
             { "seed": 16, "name": "American", "record": "22-12" },
-            { "seed": 16, "name": "Mount St. Mary’s", "record": "22-12" }
+            { "seed": 16, "name": "Mount St. Mary's", "record": "22-12" }
           ]
         },
         {
@@ -196,7 +196,7 @@
             {
               "teams": [
                 { "seed": 1, "name": "Duke", "record": "31-3" },
-                { "seed": 16, "name": "American/Mount St. Mary’s", "record": "TBD" }
+                { "seed": 16, "name": "American/Mount St. Mary's", "record": "TBD" }
               ]
             },
             {
@@ -249,7 +249,7 @@
           "matchups": [
             {
               "teams": [
-                { "seed": 7, "name": "Saint Mary’s", "record": "28-5" },
+                { "seed": 7, "name": "Saint Mary's", "record": "28-5" },
                 { "seed": 10, "name": "Vanderbilt", "record": "20-12" }
               ]
             },
