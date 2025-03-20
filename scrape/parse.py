@@ -1,4 +1,6 @@
 import asyncio
+import shutil
+import time
 import urllib.parse
 from pathlib import Path
 
@@ -26,6 +28,8 @@ from rich.table import Table
 from rich.text import Text
 from websockets.exceptions import ConnectionClosedError
 
+# TODO: Currently doesn't catch or display errors
+
 console = Console()
 
 ROOT = "https://stats.ncaa.org/rankings/change_sport_year_div"
@@ -34,28 +38,19 @@ usedNames = set()
 
 
 def GetAllHref(htmlPath: Path | str) -> list[str]:
-
     htmlPath = Path(htmlPath)
-
     content = htmlPath.read_text()
     soup = BeautifulSoup(content, "html.parser")
-
     hrefTags = soup.find_all("a", href=True)
-
     hrefs = [tag["href"] for tag in hrefTags]
-
     return hrefs
 
 
 def GetSelfReferences(hrefTags: list[str]) -> list[str]:
-
     selfReferences = []
-
     for tag in hrefTags:
-
         if tag.startswith("/"):
             selfReferences.append(tag)
-
     return selfReferences
 
 
@@ -75,21 +70,13 @@ def GetUniqueFilename(url: str, extension: str) -> str:
     str
         A unique filename with the given extension.
     """
-
     global usedNames
-
     parsed = urllib.parse.urlparse(url)
-
-    # Split the path and filter out empty parts.
     parts = [part for part in parsed.path.split("/") if part]
-
-    # If no parts, use a default base.
     if not parts:
         candidate = "index"
     else:
         candidate = parts[-1]
-
-    # Attempt to prepend previous parts until candidate is unique.
     i = len(parts) - 2
     while candidate in usedNames:
         if i >= 0:
@@ -97,22 +84,20 @@ def GetUniqueFilename(url: str, extension: str) -> str:
             i -= 1
         else:
             candidate = candidate + "-dup"
-
     usedNames.add(candidate)
-
     return candidate + extension
 
 
 async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
     """
-    Navigates to a URL or a list of URLs, waits for the page to load, then saves the HTML content and a screenshot for each.
+    Navigates to a URL or a list of URLs, saves the page content and screenshot,
+    then (optionally) clicks a button via JavaScript.
 
     Parameters
     ----------
     urls : str or list[str]
         The URL or list of URLs to scrape.
     """
-
     global usedNames
 
     # Ensure urls is a list
@@ -120,6 +105,15 @@ async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
         urls = [urls]
 
     options = Options()
+
+    # Set a common, non-headless User-Agent to reduce basic detection
+    options.add_argument(
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/111.0.0.0 Safari/537.36"
+    )
+
+    # Remove or comment out the headless argument:
     options.add_argument("--headless")
 
     try:
@@ -137,47 +131,68 @@ async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
                 expand=True,
             ) as progress:
 
+                parsed = urllib.parse.urlparse(ROOT)
+                domain = (parsed.netloc if parsed.netloc else ROOT).replace(".", "-")
+
+                baseDir = (
+                    Path(outputDir)
+                    if outputDir is not None
+                    else Path(f"scraped-{domain}")
+                )
+
+                if baseDir.exists():
+
+                    deletionTask = progress.add_task(
+                        f"[bold red]Deleting {baseDir}[/bold red]", total=1
+                    )
+
+                    shutil.rmtree(baseDir)
+
+                    time.sleep(1)
+
+                    progress.update(
+                        deletionTask,
+                        description=f"[bold red]Deleting {baseDir}[/bold red]",
+                        advance=1,
+                        refresh=True,
+                    )
+
+                    progress.remove_task(deletionTask)
+
+                baseDir.mkdir(exist_ok=True, parents=True)
+
                 startBrowserTask = progress.add_task("Starting Browser", total=1)
-
                 await browser.start()
-
                 progress.update(startBrowserTask, advance=1, refresh=True)
                 progress.remove_task(startBrowserTask)
 
                 getPageTask = progress.add_task("Getting Page", total=1)
-
                 page = await browser.get_page()
-
                 progress.update(getPageTask, advance=1, refresh=True)
                 progress.remove_task(getPageTask)
 
                 task = progress.add_task("Scraping URLs", total=len(urls))
 
                 for url in urls:
-
                     progress.update(task, description=f"Scraping {url}", refresh=True)
+
                     parsed = urllib.parse.urlparse(url)
-                    domain = (parsed.netloc if parsed.netloc else ROOT_PLAIN).replace(
+                    domain = (parsed.netloc if parsed.netloc else ROOT).replace(
                         ".", "-"
                     )
-                    baseDir = (
-                        Path(outputDir)
-                        if outputDir is not None
-                        else Path(f"scraped-{domain}")
-                    )
+
                     htmlDir = baseDir / "html"
                     screenshotDir = baseDir / "screenshots"
                     htmlDir.mkdir(parents=True, exist_ok=True)
                     screenshotDir.mkdir(parents=True, exist_ok=True)
 
                     await page.go_to(url)
-
                     await page.wait_element(pydoll.constants.By.CSS_SELECTOR, "body")
 
+                    # Save page content
                     content = await page.execute_script(
                         "document.documentElement.outerHTML"
                     )
-
                     if isinstance(content, str):
                         htmlContent = content
                     elif isinstance(content, dict):
@@ -199,6 +214,22 @@ async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
                     except ConnectionClosedError:
                         pass
 
+                    # Example: Click a button if it exists
+                    # (Comment out if not needed)
+                    try:
+                        await page.wait_element(
+                            pydoll.constants.By.CSS_SELECTOR,
+                            "button",
+                            timeout=3,
+                            raise_exc=False,
+                        )
+                        await page.execute_script(
+                            "document.querySelector('button').click();"
+                        )
+                        await asyncio.sleep(1)  # Delay to let the page update
+                    except Exception:
+                        pass
+
                     progress.update(
                         task, description=f"Scraped {url}", advance=1, refresh=True
                     )
@@ -215,6 +246,4 @@ async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(Scrape(ROOT))
