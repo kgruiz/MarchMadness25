@@ -118,12 +118,13 @@ async def SavePageAndScreenshot(
     else:
         htmlContent = str(content)
 
-    # Generate unique filenames
-    contentFilename = htmlDir / GetUniqueFilename(url, ".html")
+    # Generate shared base filename for both HTML and screenshot files
     if name:
-        screenshotFilename = screenshotDir / (name + ".png")
+        baseName = name
     else:
-        screenshotFilename = screenshotDir / GetUniqueFilename(url, ".png")
+        baseName = GetUniqueFilename(url, "")
+    contentFilename = htmlDir / (baseName + ".html")
+    screenshotFilename = screenshotDir / (baseName + ".png")
 
     # Save the HTML content
     contentFilename.write_text(htmlContent, encoding="utf-8")
@@ -236,34 +237,64 @@ async def Scrape(urls: str | list[str], outputDir: str | None = None) -> None:
                     await page.go_to(url)
                     await page.wait_element(pydoll.constants.By.CSS_SELECTOR, "body")
 
-                    await SavePageAndScreenshot(page, url, htmlDir, screenshotDir)
+                    await SavePageAndScreenshot(
+                        page, url, htmlDir, screenshotDir, "initial"
+                    )
 
-                    # Example: Select the "Men's Basketball" option from a <select> element if it exists
-                    try:
-                        await page.wait_element(
-                            pydoll.constants.By.CSS_SELECTOR,
-                            "select",
-                            timeout=3,
-                            raise_exc=False,
-                        )
-                        await page.execute_script(
-                            "var selectElem = document.querySelector('select'); "
-                            + "if(selectElem){ "
-                            + "  for(var i=0; i < selectElem.options.length; i++){ "
-                            + '    if(selectElem.options[i].text === "Men\'s Basketball"){ '
-                            + "      selectElem.selectedIndex = i; "
-                            + "      selectElem.dispatchEvent(new Event('change')); "
-                            + "      break; "
-                            + "    } "
-                            + "  } "
-                            + "}",
-                        )
-                        await asyncio.sleep(1)  # Delay to let the page update
+                    # Select the "Men's Basketball" option from a <select> element if it exists
+                    await page.wait_element(
+                        pydoll.constants.By.CSS_SELECTOR,
+                        "select",
+                        timeout=3,
+                        raise_exc=False,
+                    )
+                    await page.execute_script(
+                        "var selectElem = document.querySelector('select'); "
+                        + "if(selectElem){ "
+                        + "  for(var i=0; i < selectElem.options.length; i++){ "
+                        + '    if(selectElem.options[i].text === "Men\'s Basketball"){ '
+                        + "      selectElem.selectedIndex = i; "
+                        + "      selectElem.dispatchEvent(new Event('change')); "
+                        + "      break; "
+                        + "    } "
+                        + "  } "
+                        + "}",
+                    )
+                    await asyncio.sleep(1)  # Delay to let the page update
 
-                        await SavePageAndScreenshot(page, url, htmlDir, screenshotDir)
+                    await SavePageAndScreenshot(
+                        page, url, htmlDir, screenshotDir, "after-basketball"
+                    )
 
-                    except Exception:
-                        pass
+                    # Select the "I" option from the division select if its current value is "Select Division"
+                    await page.wait_element(
+                        pydoll.constants.By.CSS_SELECTOR,
+                        "select",
+                        timeout=3,
+                        raise_exc=False,
+                    )
+                    await page.execute_script(
+                        "var selects = document.querySelectorAll('select'); "
+                        + "for(var j = 0; j < selects.length; j++){ "
+                        + "    var sel = selects[j]; "
+                        + "    if(sel.options[sel.selectedIndex] && sel.options[sel.selectedIndex].text === 'Select Division'){ "
+                        + "        sel.click(); "
+                        + "        for(var i=0; i < sel.options.length; i++){ "
+                        + "            if(sel.options[i].text === 'I'){ "
+                        + "                sel.selectedIndex = i; "
+                        + "                sel.dispatchEvent(new Event('change')); "
+                        + "                break; "
+                        + "            } "
+                        + "        } "
+                        + "        break; "
+                        + "    } "
+                        + "}",
+                    )
+                    await asyncio.sleep(1)  # Delay to let the page update
+
+                    await SavePageAndScreenshot(
+                        page, url, htmlDir, screenshotDir, "after-division"
+                    )
 
                     progress.update(
                         task, description=f"Scraped {url}", advance=1, refresh=True
