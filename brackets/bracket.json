@@ -1,0 +1,344 @@
+{
+    "firstFour": {
+      "location": "Dayton, OH",
+      "dates": ["March 18", "March 19"],
+      "matchups": [
+        {
+          "teams": [
+            { "seed": 16, "name": "Alabama State", "record": "19-15" },
+            { "seed": 16, "name": "Saint Francis", "record": "16-17" }
+          ]
+        },
+        {
+          "teams": [
+            { "seed": 16, "name": "American", "record": "22-12" },
+            { "seed": 16, "name": "Mount St. Mary’s", "record": "22-12" }
+          ]
+        },
+        {
+          "teams": [
+            { "seed": 11, "name": "San Diego State", "record": "21-9" },
+            { "seed": 11, "name": "North Carolina", "record": "22-13" }
+          ]
+        },
+        {
+          "teams": [
+            { "seed": 11, "name": "Texas", "record": "19-15" },
+            { "seed": 11, "name": "Xavier", "record": "21-11" }
+          ]
+        }
+      ]
+    },
+    "southRegion": {
+      "location": "Atlanta",
+      "dates": "March 28-30",
+      "subregions": [
+        {
+          "location": "Lexington",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 1, "name": "Auburn", "record": "28-5" },
+                { "seed": 16, "name": "Alabama State/Saint Francis", "record": "TBD" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 8, "name": "Louisville", "record": "27-7" },
+                { "seed": 9, "name": "Creighton", "record": "24-10" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Denver",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 5, "name": "Michigan", "record": "25-9" },
+                { "seed": 12, "name": "UC San Diego", "record": "30-4" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 4, "name": "Texas A&M", "record": "22-10" },
+                { "seed": 13, "name": "Yale", "record": "22-7" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Milwaukee",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 6, "name": "Ole Miss", "record": "22-11" },
+                { "seed": 11, "name": "San Diego State/North Carolina", "record": "TBD" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 3, "name": "Iowa State", "record": "24-9" },
+                { "seed": 14, "name": "Lipscomb", "record": "25-9" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Cleveland",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 7, "name": "Marquette", "record": "23-10" },
+                { "seed": 10, "name": "New Mexico", "record": "26-7" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 2, "name": "Michigan State", "record": "27-6" },
+                { "seed": 15, "name": "Bryant", "record": "23-11" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "westRegion": {
+      "location": "San Francisco",
+      "dates": "March 27-29",
+      "subregions": [
+        {
+          "location": "Raleigh",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 1, "name": "Florida", "record": "30-4" },
+                { "seed": 16, "name": "Norfolk State", "record": "24-10" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 8, "name": "UConn", "record": "23-10" },
+                { "seed": 9, "name": "Oklahoma", "record": "20-13" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Seattle",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 5, "name": "Memphis", "record": "29-5" },
+                { "seed": 12, "name": "Colorado State", "record": "25-9" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 4, "name": "Maryland", "record": "25-8" },
+                { "seed": 13, "name": "Grand Canyon", "record": "26-7" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Wichita",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 6, "name": "Missouri", "record": "22-11" },
+                { "seed": 11, "name": "Drake", "record": "30-3" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 3, "name": "Texas Tech", "record": "25-8" },
+                { "seed": 14, "name": "UNCW", "record": "27-7" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Providence",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 7, "name": "Kansas", "record": "21-12" },
+                { "seed": 10, "name": "Arkansas", "record": "20-13" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 2, "name": "St. John's", "record": "30-3" },
+                { "seed": 15, "name": "Omaha", "record": "22-12" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "eastRegion": {
+      "location": "Newark",
+      "dates": "March 27-29",
+      "subregions": [
+        {
+          "location": "Raleigh",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 1, "name": "Duke", "record": "31-3" },
+                { "seed": 16, "name": "American/Mount St. Mary’s", "record": "TBD" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 8, "name": "Mississippi State", "record": "21-12" },
+                { "seed": 9, "name": "Baylor", "record": "19-14" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Seattle",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 5, "name": "Oregon", "record": "24-9" },
+                { "seed": 12, "name": "Liberty", "record": "28-6" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 4, "name": "Arizona", "record": "22-12" },
+                { "seed": 13, "name": "Akron", "record": "28-6" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Denver",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 6, "name": "BYU", "record": "24-9" },
+                { "seed": 11, "name": "VCU", "record": "28-6" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 3, "name": "Wisconsin", "record": "26-9" },
+                { "seed": 14, "name": "Montana", "record": "25-9" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Cleveland",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 7, "name": "Saint Mary’s", "record": "28-5" },
+                { "seed": 10, "name": "Vanderbilt", "record": "20-12" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 2, "name": "Alabama", "record": "25-8" },
+                { "seed": 15, "name": "Robert Morris", "record": "26-8" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "midwestRegion": {
+      "location": "Indianapolis",
+      "dates": "March 28-30",
+      "subregions": [
+        {
+          "location": "Wichita",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 1, "name": "Houston", "record": "30-4" },
+                { "seed": 16, "name": "SIU Edwardsville", "record": "22-11" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 8, "name": "Gonzaga", "record": "25-8" },
+                { "seed": 9, "name": "Georgia", "record": "20-12" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Providence",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 5, "name": "Clemson", "record": "27-6" },
+                { "seed": 12, "name": "McNeese", "record": "27-6" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 4, "name": "Purdue", "record": "29-5" },
+                { "seed": 13, "name": "High Point", "record": "29-5" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Milwaukee",
+          "dates": "March 21-23",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 6, "name": "Illinois", "record": "21-12" },
+                { "seed": 11, "name": "Texas/Xavier", "record": "TBD" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 3, "name": "Kentucky", "record": "22-11" },
+                { "seed": 14, "name": "Troy", "record": "23-10" }
+              ]
+            }
+          ]
+        },
+        {
+          "location": "Lexington",
+          "dates": "March 20-22",
+          "matchups": [
+            {
+              "teams": [
+                { "seed": 7, "name": "UCLA", "record": "22-10" },
+                { "seed": 10, "name": "Utah State", "record": "26-7" }
+              ]
+            },
+            {
+              "teams": [
+                { "seed": 2, "name": "Tennessee", "record": "27-7" },
+                { "seed": 15, "name": "Wofford", "record": "19-15" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }

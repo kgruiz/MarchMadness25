@@ -1,0 +1,329 @@
+\documentclass[tikz,border=1cm]{standalone}
+\usepackage{calc} % for coordinate calculations if needed
+
+% ------------------------------------------------
+% 1) Define a macro for 64 unique team names
+% ------------------------------------------------
+\def\TeamName#1{%
+  \ifcase#1
+    \or TheLightning
+    \or TheThunder
+    \or TheHurricanes
+    \or TheEagles
+    \or TheWarriors
+    \or TheRaptors
+    \or ThePirates
+    \or TheKnights
+    \or TheTitans
+    \or TheFalcons
+    \or TheWolves
+    \or ThePanthers
+    \or TheDragons
+    \or TheSharks
+    \or TheVikings
+    \or TheLions
+    \or TheBears
+    \or TheFoxes
+    \or TheSpartans
+    \or ThePhantoms
+    \or TheRoyals
+    \or TheComets
+    \or TheRangers
+    \or TheStallions
+    \or TheHornets
+    \or TheCyclones
+    \or TheMustangs
+    \or TheMarauders
+    \or TheCentaurs
+    \or TheCobras
+    \or ThePhoenix
+    \or TheSamurai
+    \or TheGladiators
+    \or TheHawks
+    \or TheBison
+    \or TheRebels
+    \or TheGators
+    \or TheSuns
+    \or TheBarracudas
+    \or TheMariners
+    \or TheTigers
+    \or TheOtters
+    \or TheBulldogs
+    \or TheGiants
+    \or TheCheetahs
+    \or TheCougars
+    \or TheGeckos
+    \or TheBobcats
+    \or TheOutlaws
+    \or TheTornadoes
+    \or TheProwlers
+    \or TheShadows
+    \or TheGriffins
+    \or TheHustlers
+    \or TheRockets
+    \or TheBullets
+    \or TheJackals
+    \or ThePredators
+    \or TheSentries
+    \or TheGuardians
+    \or TheMammoths
+    \or TheYetis
+    \or TheSerpents
+    \or TheMinotaurs
+  \fi
+}
+
+% ------------------------------------------------
+% 2) Bracket spacing & drawing parameters
+% ------------------------------------------------
+
+% How far right the right-side brackets start
+\def\regionSpacingX{18}
+
+% How far up/down the bottom brackets shift
+\def\regionSpacingY{14}
+
+% Base horizontal distance between bracket rounds
+\def\baseRoundDist{4}
+
+% Base vertical spacing between matches in a round
+\def\baseMatchDist{1.5}
+
+% Extra offset for the first round
+\def\firstRoundOffsetX{0}
+\def\firstRoundOffsetY{0}
+
+% Multiplicative factors for spacing
+\def\roundSpacingFactor{1.0}
+\def\matchSpacingFactor{1.0}
+
+% Extend the first round horizontal lines
+\def\firstRoundLineFactor{1.5}
+
+% Short vertical segment length to join top & bottom lines
+\def\verticalJoin{0.3}
+
+% ------------------------------------------------
+% 3) Define the /tikz/tournament keys
+% ------------------------------------------------
+\tikzset{
+  tournament/.cd,
+  % number of rounds (4 => 16 teams in region)
+  n/.initial=4,
+  % store 'region' key in \myregion
+  region/.store in=\myregion,
+  region/.default={},
+  % store 'teamOffset' key in \myteamoffset
+  teamOffset/.store in=\myteamoffset,
+  teamOffset/.default=0
+}
+
+% ------------------------------------------------
+% 4) Picture styles for LTR and RTL brackets
+% ------------------------------------------------
+
+% --- LTR ---
+\tikzset{pics/tournament-region-ltr/.style={
+  code={
+    % Read the bracket config
+    \tikzset{tournament/.cd,#1}
+    \pgfmathsetmacro{\currRoundDist}{\baseRoundDist}
+    \pgfmathsetmacro{\currMatchDist}{\baseMatchDist}
+
+    \foreach \round [remember=\round as \prevRound] in {\myregion n,\myregion n-1,...,0} {%
+      % Actually we do not want \myregion n, but the key 'n' from the tournament.
+      % So let's correct that: read from \pgfkeysvalueof
+    }%
+  }
+}}
+
+% However, we need the numeric value from the key 'n'. We'll do it carefully:
+% We'll define a helper macro:
+\def\getTournamentValue#1{\pgfkeysvalueof{/tikz/tournament/#1}}
+
+% Re-define the LTR style with correct references:
+\tikzset{pics/tournament-region-ltr/.style={
+  code={
+    \pgfmathtruncatemacro{\Rounds}{\getTournamentValue{n}} % number of rounds
+    \pgfmathsetmacro{\currRoundDist}{\baseRoundDist}
+    \pgfmathsetmacro{\currMatchDist}{\baseMatchDist}
+
+    % For each round from n down to 0
+    \foreach \round [remember=\round as \prevRound] in {\Rounds,\Rounds-1,...,0} {
+      \pgfmathtruncatemacro{\numNodes}{pow(2,\round)}
+      \pgfmathsetmacro{\xOffset}{-\round*\currRoundDist + \firstRoundOffsetX}
+
+      % FIRST ROUND => separate lines, short vertical join
+      \ifnum\round=\Rounds
+        \foreach \y in {1,...,\numNodes} {
+          % y-coords
+          \pgfmathsetmacro{\yTop}{(\y-\numNodes/2 - 0.5)*\currMatchDist + \firstRoundOffsetY}
+          \pgfmathsetmacro{\yBot}{\yTop - \currMatchDist}
+
+          % Indices for the team names
+          \pgfmathtruncatemacro{\teamA}{\myteamoffset + 2*\y - 1}
+          \pgfmathtruncatemacro{\teamB}{\myteamoffset + 2*\y}
+
+          % -- TOP LINE --
+          \draw (\xOffset, \yTop)
+            -- ++(\firstRoundLineFactor*\currRoundDist, 0)
+            coordinate (TopEnd);
+
+          % Label for top team
+          \node[anchor=south west] at (\xOffset, \yTop) {\TeamName{\teamA}};
+
+          % -- BOTTOM LINE --
+          \draw (\xOffset, \yBot)
+            -- ++(\firstRoundLineFactor*\currRoundDist, 0)
+            coordinate (BotEnd);
+
+          % Label for bottom team
+          \node[anchor=south west] at (\xOffset, \yBot) {\TeamName{\teamB}};
+
+          % -- Short vertical join --
+          \coordinate (TopMid) at ($(TopEnd) + (0,-\verticalJoin)$);
+          \coordinate (BotMid) at ($(BotEnd) + (0,\verticalJoin)$);
+          \draw (TopMid) -- (BotMid);
+
+          % Next-round coordinate is midpoint of that vertical
+          \coordinate (r-\myregion-\round-\y) at ($ (TopMid)!0.5!(BotMid) $);
+        }
+      \else
+        % LATER ROUNDS => standard bracket line
+        \foreach \y [evaluate=\y as \z using {int(2*\y)}] in {1,...,\numNodes} {
+          \draw
+            (r-\myregion-\prevRound-\z)
+              -- ++(\currRoundDist,0)
+              |- coordinate[pos=0.25] (r-\myregion-\round-\y)
+              (r-\myregion-\prevRound-\the\numexpr\z-1);
+        }
+      \fi
+
+      % Scale for next round
+      \pgfmathsetmacro{\currRoundDist}{\currRoundDist * \roundSpacingFactor}
+      \pgfmathsetmacro{\currMatchDist}{\currMatchDist * \matchSpacingFactor}
+    }
+
+    % Final line from the last node
+    \draw (r-\myregion-0-1) -- ++(\currRoundDist,0);
+  }
+}}
+
+% --- RTL ---
+\tikzset{pics/tournament-region-rtl/.style={
+  code={
+    \pgfmathtruncatemacro{\Rounds}{\getTournamentValue{n}}
+    \pgfmathsetmacro{\currRoundDist}{\baseRoundDist}
+    \pgfmathsetmacro{\currMatchDist}{\baseMatchDist}
+
+    \foreach \round [remember=\round as \prevRound] in {\Rounds,\Rounds-1,...,0} {
+      \pgfmathtruncatemacro{\numNodes}{pow(2,\round)}
+      \pgfmathsetmacro{\xOffset}{\round*\currRoundDist + \firstRoundOffsetX}
+
+      \ifnum\round=\Rounds
+        \foreach \y in {1,...,\numNodes} {
+          \pgfmathsetmacro{\yTop}{(\y-\numNodes/2 - 0.5)*\currMatchDist + \firstRoundOffsetY}
+          \pgfmathsetmacro{\yBot}{\yTop - \currMatchDist}
+
+          \pgfmathtruncatemacro{\teamA}{\myteamoffset + 2*\y - 1}
+          \pgfmathtruncatemacro{\teamB}{\myteamoffset + 2*\y}
+
+          % -- TOP LINE --
+          \draw (\xOffset, \yTop)
+            -- ++(-\firstRoundLineFactor*\currRoundDist, 0)
+            coordinate (TopEnd);
+
+          \node[anchor=south west] at (\xOffset - \firstRoundLineFactor*\currRoundDist, \yTop)
+            {\TeamName{\teamA}};
+
+          % -- BOTTOM LINE --
+          \draw (\xOffset, \yBot)
+            -- ++(-\firstRoundLineFactor*\currRoundDist, 0)
+            coordinate (BotEnd);
+
+          \node[anchor=south west] at (\xOffset - \firstRoundLineFactor*\currRoundDist, \yBot)
+            {\TeamName{\teamB}};
+
+          % -- Short vertical join --
+          \coordinate (TopMid) at ($(TopEnd) + (0,-\verticalJoin)$);
+          \coordinate (BotMid) at ($(BotEnd) + (0,\verticalJoin)$);
+          \draw (TopMid) -- (BotMid);
+
+          \coordinate (r-\myregion-\round-\y) at ($ (TopMid)!0.5!(BotMid) $);
+        }
+      \else
+        \foreach \y [evaluate=\y as \z using {int(2*\y)}] in {1,...,\numNodes} {
+          \draw
+            (r-\myregion-\prevRound-\z)
+              -- ++(-\currRoundDist,0)
+              |- coordinate[pos=0.25] (r-\myregion-\round-\y)
+              (r-\myregion-\prevRound-\the\numexpr\z-1);
+        }
+      \fi
+
+      \pgfmathsetmacro{\currRoundDist}{\currRoundDist * \roundSpacingFactor}
+      \pgfmathsetmacro{\currMatchDist}{\currMatchDist * \matchSpacingFactor}
+    }
+
+    \draw (r-\myregion-0-1) -- ++(-\currRoundDist,0);
+  }
+}}
+
+% ------------------------------------------------
+% 5) Document body: draw 4 regions => 64 teams
+% ------------------------------------------------
+\begin{document}
+\begin{tikzpicture}[remember picture, every node/.style={font=\small}]
+
+  % Region A (top-left), 16 teams => offset 0
+  \begin{scope}[shift={(0,\regionSpacingY)}]
+    \pic {tournament-region-ltr={
+          region=A,
+          teamOffset=0,  % teams 1..16
+          n=4
+        }};
+  \end{scope}
+
+  % Region B (top-right), 16 teams => offset 16
+  \begin{scope}[shift={(\regionSpacingX,\regionSpacingY)}]
+    \pic {tournament-region-rtl={
+          region=B,
+          teamOffset=16, % teams 17..32
+          n=4
+        }};
+  \end{scope}
+
+  % Region C (bottom-left), 16 teams => offset 32
+  \begin{scope}[shift={(0,-\regionSpacingY)}]
+    \pic {tournament-region-ltr={
+          region=C,
+          teamOffset=32, % teams 33..48
+          n=4
+        }};
+  \end{scope}
+
+  % Region D (bottom-right), 16 teams => offset 48
+  \begin{scope}[shift={(\regionSpacingX,-\regionSpacingY)}]
+    \pic {tournament-region-rtl={
+          region=D,
+          teamOffset=48, % teams 49..64
+          n=4
+        }};
+  \end{scope}
+
+  % ------------------------------------------------
+  % Final Four: A vs C on left, B vs D on right
+  % ------------------------------------------------
+  \coordinate (SemiLeft) at ($(r-A-0-1)!0.5!(r-C-0-1)$);
+  \draw[thick] (r-A-0-1) -- (SemiLeft);
+  \draw[thick] (r-C-0-1) -- (SemiLeft);
+
+  \coordinate (SemiRight) at ($(r-B-0-1)!0.5!(r-D-0-1)$);
+  \draw[thick] (r-B-0-1) -- (SemiRight);
+  \draw[thick] (r-D-0-1) -- (SemiRight);
+
+  % Championship
+  \draw[thick] (SemiLeft) -- (SemiRight);
+
+\end{tikzpicture}
+\end{document}
